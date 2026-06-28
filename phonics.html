@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自然拼读小课堂</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7e57c2;
+            --primary-dark: #5e35b1;
+            --success: #66bb6a;
+            --warning: #ffca28;
+            --sky-top: #81d4fa;
+            --sky-bottom: #e1f5fe;
+            --card: #ffffff;
+            --text: #4a4a4a;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card);
+            border-radius: 32px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+            padding: 36px;
+            border: 5px solid #fff;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .screen.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #78909c;
+            margin-bottom: 28px;
+            font-size: 18px;
+        }
+
+        .section-title {
+            font-size: 26px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .level-card {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border: 4px solid #ce93d8;
+            border-radius: 20px;
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .level-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 20px rgba(126, 87, 194, 0.2);
+        }
+
+        .level-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .level-card .level-num {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .level-card .level-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .level-card .level-desc {
+            font-size: 15px;
+            color: #6a1b9a;
+        }
+
+        .unit-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .unit-card {
+            background: #e3f2fd;
+            border: 3px solid #90caf9;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .unit-card:hover {
+            background: #bbdefb;
+            transform: scale(1.03);
+        }
+
+        .mode-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .mode-card {
+            background: #fff8e1;
+            border: 4px solid #ffcc80;
+            border-radius: 18px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-card:hover {
+            background: #ffecb3;
+            border-color: var(--warning);
+        }
+
+        .mode-card .icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .mode-card .name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .phoneme-display {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 24px;
+            border: 4px dashed #a5d6a7;
+        }
+
+        .phoneme-big {
+            font-size: 90px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .phoneme-keyword {
+            font-size: 28px;
+            color: #2e7d32;
+            margin: 14px 0;
+        }
+
+        .speak-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            font-size: 48px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(126, 87, 194, 0.3);
+            transition: all 0.2s;
+        }
+
+        .speak-btn:hover { transform: scale(1.08); }
+        .speak-btn:active { transform: scale(0.95); }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin: 20px 0;
+        }
+
+        .word-card {
+            background: #fff;
+            border: 3px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .word-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .word-card .word-en {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .word-card .word-icon {
+            font-size: 40px;
+            margin: 8px 0;
+        }
+
+        .progress-bar {
+            height: 16px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 16px 28px;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: #78909c; color: #fff; }
+        .btn-secondary:hover { background: #546e7a; }
+        .btn-success { background: var(--success); color: #fff; }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .feedback {
+            border-radius: 16px;
+            padding: 18px;
+            margin-top: 16px;
+            font-size: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .feedback.correct { background: #e8f5e9; color: #2e7d32; display: block; }
+        .feedback.wrong { background: #ffebee; color: #c62828; display: block; }
+
+        .breadcrumb {
+            font-size: 16px;
+            color: #78909c;
+            margin-bottom: 16px;
+        }
+
+        .breadcrumb span {
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        .breadcrumb span:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 24px; }
+            h1 { font-size: 32px; }
+            .mode-options { grid-template-columns: 1fr; }
+            .btn-row { grid-template-columns: 1fr; }
+            .phoneme-big { font-size: 64px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 首页：选择级别 -->
+        <div id="homeScreen" class="screen active">
+            <h1>🔤 自然拼读小课堂</h1>
+            <p class="subtitle">像母语孩子一样学会拼读英语</p>
+            <div class="section-title">选择级别</div>
+            <div class="level-grid" id="levelGrid"></div>
+        </div>
+
+        <!-- 单元选择页 -->
+        <div id="unitScreen" class="screen">
+            <div class="breadcrumb"><span onclick="goHome()">🏠 首页</span> / 选择单元</div>
+            <h2 class="section-title" id="unitTitle">Level 1</h2>
+            <div class="unit-list" id="unitList"></div>
+        </div>
+
+        <!-- 模式选择页 -->
+        <div id="modeScreen" class="screen">
+            <div class="breadcrumb">
+                <span onclick="goHome()">🏠 首页</span> /
+                <span onclick="goToUnits()">单元</span> / 选择模式
+            </div>
+            <h2 class="section-title">今天想怎么学？</h2>
+            <div class="mode-options">
+                <div class="mode-card" onclick="startMode('learn')">
+                    <div class="icon">📖</div>
+                    <div class="name">学习模式</div>
+                </div>
+                <div class="mode-card" onclick="startMode('listen')">
+                    <div class="icon">👂</div>
+                    <div class="name">听音辨音</div>
+                </div>
+                <div class="mode-card" onclick="startMode('blend')">
+                    <div class="icon">🧩</div>
+                    <div class="name">拼读练习</div>
+                </div>
+                <div class="mode-card" onclick="startMode('write')">
+                    <div class="icon">✍️</div>
+                    <div class="name">听音写词</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习模式 -->
+        <div id="learnScreen" class="screen">
+            <div class="progress-bar">
+                <div class="progress-fill" id="learnProgress"></div>
+            </div>
+            <div class="phoneme-display">
+                <div id="learnPhoneme">Aa</div>
+                <div class="phoneme-big" id="learnBig">/a/</div>
+                <div class="phoneme-keyword" id="learnKeyword">apple 🍎</div>
+                <button class="speak-btn" id="learnSpeak">🔊</button>
+            </div>
+            <div class="word-grid" id="learnWords"></div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goToMode()">⬅️ 返回</button>
+                <button class="btn btn-primary" id="learnNext">下一步 ➡️</button>
+            </div>
+        </div>
+
+        <!-- 听音辨音 -->
+        <div id="listenScreen" class="screen">
+            <div class="progress-bar">
+                <div class="progress-fill" id="listenProgress"></div>
+            </div>
+            <div class="phoneme-display">
+                <div>听发音，选择你听到的字母/组合</div>
+                <button class="speak-btn" id="listenPlay" style="margin-top: 20px;">🔊</button>
+            </div>
+            <div class="word-grid" id="listenOptions"></div>
+            <div class="feedback" id="listenFeedback"></div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goToMode()">⬅️ 返回</button>
+                <button class="btn btn-primary" id="listenNext" disabled>下一步 ➡️</button>
+            </div>
+        </div>
+
+        <!-- 拼读练习 -->
+        <div id="blendScreen" class="screen">
+            <div class="progress-bar">
+                <div class="progress-fill" id="blendProgress"></div>
+            </div>
+            <div class="phoneme-display">
+                <div>跟着读一读</div>
+                <div class="phoneme-big" id="blendWord">cat</div>
+                <div class="phoneme-keyword" id="blendBreak">c-a-t</div>
+                <button class="speak-btn" id="blendSpeak">🔊</button>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goToMode()">⬅️ 返回</button>
+                <button class="btn btn-primary" id="blendNext">下一步 ➡️</button>
+            </div>
+        </div>
+
+        <!-- 听音写词 -->
+        <div id="writeScreen" class="screen">
+            <div class="progress-bar">
+                <div class="progress-fill" id="writeProgress"></div>
+            </div>
+            <div class="phoneme-display">
+                <div>听发音，写出单词</div>
+                <button class="speak-btn" id="writePlay" style="margin-top: 20px;">🔊</button>
+            </div>
+            <input type="text" id="writeInput" placeholder="在这里输入单词" style="width:100%; padding:18px; font-size:24px; border-radius:14px; border:3px solid #90caf9; text-align:center; margin: 16px 0;">
+            <button class="btn btn-primary" id="writeSubmit">✅ 提交</button>
+            <div class="feedback" id="writeFeedback"></div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goToMode()">⬅️ 返回</button>
+                <button class="btn btn-primary" id="writeNext" disabled>下一步 ➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===================== 课程数据（示例框架，需替换为真实资料） =====================
+        const phonicsData = {
+            levels: [
+                {
+                    id: 1,
+                    title: "The Alphabet",
+                    desc: "26 个字母发音",
+                    units: [
+                        {
+                            id: "l1u1",
+                            title: "A, B, C",
+                            phonemes: [
+                                { symbol: "a", sound: "/æ/", keyword: "apple", icon: "🍎", words: ["apple", "ant", "ax"] },
+                                { symbol: "b", sound: "/b/", keyword: "ball", icon: "⚽", words: ["ball", "bat", "bed"] },
+                                { symbol: "c", sound: "/k/", keyword: "cat", icon: "🐱", words: ["cat", "cup", "car"] }
+                            ]
+                        },
+                        {
+                            id: "l1u2",
+                            title: "D, E, F",
+                            phonemes: [
+                                { symbol: "d", sound: "/d/", keyword: "dog", icon: "🐶", words: ["dog", "duck", "dad"] },
+                                { symbol: "e", sound: "/e/", keyword: "egg", icon: "🥚", words: ["egg", "bed", "red"] },
+                                { symbol: "f", sound: "/f/", keyword: "fish", icon: "🐟", words: ["fish", "fan", "fat"] }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: "Short Vowels",
+                    desc: "短元音 a, e, i, o, u",
+                    units: [
+                        {
+                            id: "l2u1",
+                            title: "Short A",
+                            phonemes: [
+                                { symbol: "a", sound: "/æ/", keyword: "cat", icon: "🐱", words: ["cat", "bat", "hat", "mat"] }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 3,
+                    title: "Long Vowels",
+                    desc: "长元音 a, e, i, o, u",
+                    units: [
+                        {
+                            id: "l3u1",
+                            title: "Long A",
+                            phonemes: [
+                                { symbol: "a_e", sound: "/eɪ/", keyword: "cake", icon: "🎂", words: ["cake", "make", "take", "lake"] }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 4,
+                    title: "Consonant Blends",
+                    desc: "辅音连缀",
+                    units: [
+                        {
+                            id: "l4u1",
+                            title: "BL, CL, FL",
+                            phonemes: [
+                                { symbol: "bl", sound: "/bl/", keyword: "blue", icon: "🔵", words: ["blue", "black", "block"] }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 5,
+                    title: "Letter Combinations",
+                    desc: "常见字母组合",
+                    units: [
+                        {
+                            id: "l5u1",
+                            title: "SH, CH, TH",
+                            phonemes: [
+                                { symbol: "sh", sound: "/ʃ/", keyword: "ship", icon: "🚢", words: ["ship", "sheep", "shop"] }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // ===================== 应用状态 =====================
+        const appState = {
+            currentLevel: null,
+            currentUnit: null,
+            currentMode: null,
+            currentItems: [],
+            currentIndex: 0,
+            settings: { rate: 0.8 }
+        };
+
+        // ===================== DOM 元素 =====================
+        const screens = {
+            home: document.getElementById("homeScreen"),
+            unit: document.getElementById("unitScreen"),
+            mode: document.getElementById("modeScreen"),
+            learn: document.getElementById("learnScreen"),
+            listen: document.getElementById("listenScreen"),
+            blend: document.getElementById("blendScreen"),
+            write: document.getElementById("writeScreen")
+        };
+
+        // ===================== 工具函数 =====================
+        function switchScreen(name) {
+            Object.values(screens).forEach(s => s.classList.remove("active"));
+            screens[name].classList.add("active");
+        }
+
+        function speak(text) {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = "en-US";
+            utter.rate = appState.settings.rate;
+            utter.pitch = 1.0;
+            window.speechSynthesis.speak(utter);
+        }
+
+        function getPreferredVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            const preferred = ["Google US English", "Samantha", "Microsoft David", "Alex"];
+            for (const name of preferred) {
+                const v = voices.find(voice => voice.name === name);
+                if (v) return v;
+            }
+            return voices.find(v => v.lang.startsWith("en"));
+        }
+
+        // ===================== 首页：渲染级别 =====================
+        function renderLevels() {
+            const grid = document.getElementById("levelGrid");
+            grid.innerHTML = "";
+            phonicsData.levels.forEach(level => {
+                const card = document.createElement("div");
+                card.className = "level-card";
+                card.innerHTML = `
+                    <div class="level-num">Level ${level.id}</div>
+                    <div class="level-title">${level.title}</div>
+                    <div class="level-desc">${level.desc}</div>
+                `;
+                card.addEventListener("click", () => selectLevel(level));
+                grid.appendChild(card);
+            });
+        }
+
+        function selectLevel(level) {
+            appState.currentLevel = level;
+            document.getElementById("unitTitle").textContent = `Level ${level.id}: ${level.title}`;
+            renderUnits(level);
+            switchScreen("unit");
+        }
+
+        function renderUnits(level) {
+            const list = document.getElementById("unitList");
+            list.innerHTML = "";
+            level.units.forEach(unit => {
+                const card = document.createElement("div");
+                card.className = "unit-card";
+                card.textContent = unit.title;
+                card.addEventListener("click", () => selectUnit(unit));
+                list.appendChild(card);
+            });
+        }
+
+        function selectUnit(unit) {
+            appState.currentUnit = unit;
+            switchScreen("mode");
+        }
+
+        // ===================== 导航 =====================
+        function goHome() {
+            appState.currentLevel = null;
+            appState.currentUnit = null;
+            appState.currentMode = null;
+            switchScreen("home");
+        }
+
+        function goToUnits() {
+            if (appState.currentLevel) {
+                switchScreen("unit");
+            } else {
+                goHome();
+            }
+        }
+
+        function goToMode() {
+            if (appState.currentUnit) {
+                switchScreen("mode");
+            } else {
+                goHome();
+            }
+        }
+
+        // ===================== 模式启动 =====================
+        function startMode(mode) {
+            appState.currentMode = mode;
+            appState.currentItems = appState.currentUnit.phonemes.slice();
+            appState.currentIndex = 0;
+
+            switch (mode) {
+                case "learn": initLearn(); break;
+                case "listen": initListen(); break;
+                case "blend": initBlend(); break;
+                case "write": initWrite(); break;
+            }
+        }
+
+        // ===================== 学习模式 =====================
+        function initLearn() {
+            updateProgress("learnProgress");
+            const item = appState.currentItems[appState.currentIndex];
+            document.getElementById("learnPhoneme").textContent = `${item.symbol} 发音 ${item.sound}`;
+            document.getElementById("learnBig").textContent = item.sound;
+            document.getElementById("learnKeyword").textContent = `${item.keyword} ${item.icon || ""}`;
+
+            document.getElementById("learnSpeak").onclick = () => {
+                speak(`${item.symbol} says ${item.sound}. ${item.keyword}.`);
+                item.words.forEach((w, i) => setTimeout(() => speak(w), (i + 2) * 1200));
+            };
+
+            const wordsGrid = document.getElementById("learnWords");
+            wordsGrid.innerHTML = "";
+            item.words.forEach(word => {
+                const card = document.createElement("div");
+                card.className = "word-card";
+                card.innerHTML = `
+                    <div class="word-en">${word}</div>
+                    <div class="word-icon">🔊</div>
+                `;
+                card.addEventListener("click", () => speak(word));
+                wordsGrid.appendChild(card);
+            });
+
+            document.getElementById("learnNext").onclick = () => {
+                appState.currentIndex++;
+                if (appState.currentIndex < appState.currentItems.length) {
+                    initLearn();
+                } else {
+                    alert("本单元学习完成！🎉");
+                    goToMode();
+                }
+            };
+
+            switchScreen("learn");
+        }
+
+        // ===================== 听音辨音 =====================
+        function initListen() {
+            updateProgress("listenProgress");
+            const item = appState.currentItems[appState.currentIndex];
+            const feedback = document.getElementById("listenFeedback");
+            const nextBtn = document.getElementById("listenNext");
+            feedback.style.display = "none";
+            feedback.className = "feedback";
+            nextBtn.disabled = true;
+
+            document.getElementById("listenPlay").onclick = () => speak(item.sound);
+
+            const options = [item];
+            const others = appState.currentUnit.phonemes.filter(p => p.symbol !== item.symbol);
+            while (options.length < 4 && others.length > 0) {
+                const pick = others.splice(Math.floor(Math.random() * others.length), 1)[0];
+                if (!options.includes(pick)) options.push(pick);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById("listenOptions");
+            grid.innerHTML = "";
+            options.forEach(opt => {
+                const card = document.createElement("div");
+                card.className = "word-card";
+                card.innerHTML = `
+                    <div class="word-en">${opt.symbol}</div>
+                    <div style="font-size:14px; color:#666;">${opt.sound}</div>
+                `;
+                card.addEventListener("click", () => {
+                    const isCorrect = opt.symbol === item.symbol;
+                    feedback.textContent = isCorrect ? "✅ 回答正确！" : `❌ 正确答案是 ${item.symbol}`;
+                    feedback.className = `feedback ${isCorrect ? "correct" : "wrong"}`;
+                    feedback.style.display = "block";
+                    nextBtn.disabled = false;
+                    Array.from(grid.children).forEach(c => c.style.pointerEvents = "none");
+                });
+                grid.appendChild(card);
+            });
+
+            nextBtn.onclick = () => {
+                appState.currentIndex++;
+                if (appState.currentIndex < appState.currentItems.length) {
+                    initListen();
+                } else {
+                    alert("听音辨音完成！🎉");
+                    goToMode();
+                }
+            };
+
+            switchScreen("listen");
+            setTimeout(() => speak(item.sound), 500);
+        }
+
+        // ===================== 拼读练习 =====================
+        function initBlend() {
+            updateProgress("blendProgress");
+            const item = appState.currentItems[appState.currentIndex];
+            const word = item.words[Math.floor(Math.random() * item.words.length)];
+            document.getElementById("blendWord").textContent = word;
+            document.getElementById("blendBreak").textContent = word.split("").join("-");
+            document.getElementById("blendSpeak").onclick = () => speak(word);
+
+            document.getElementById("blendNext").onclick = () => {
+                appState.currentIndex++;
+                if (appState.currentIndex < appState.currentItems.length) {
+                    initBlend();
+                } else {
+                    alert("拼读练习完成！🎉");
+                    goToMode();
+                }
+            };
+
+            switchScreen("blend");
+        }
+
+        // ===================== 听音写词 =====================
+        function initWrite() {
+            updateProgress("writeProgress");
+            const item = appState.currentItems[appState.currentIndex];
+            const word = item.words[Math.floor(Math.random() * item.words.length)];
+            const input = document.getElementById("writeInput");
+            const feedback = document.getElementById("writeFeedback");
+            const nextBtn = document.getElementById("writeNext");
+            input.value = "";
+            feedback.style.display = "none";
+            nextBtn.disabled = true;
+
+            document.getElementById("writePlay").onclick = () => speak(word);
+            document.getElementById("writeSubmit").onclick = () => {
+                const answer = input.value.trim().toLowerCase();
+                const isCorrect = answer === word.toLowerCase();
+                feedback.textContent = isCorrect ? "✅ 回答正确！" : `❌ 正确答案是 ${word}`;
+                feedback.className = `feedback ${isCorrect ? "correct" : "wrong"}`;
+                feedback.style.display = "block";
+                nextBtn.disabled = false;
+            };
+
+            input.onkeydown = (e) => {
+                if (e.key === "Enter") document.getElementById("writeSubmit").click();
+            };
+
+            nextBtn.onclick = () => {
+                appState.currentIndex++;
+                if (appState.currentIndex < appState.currentItems.length) {
+                    initWrite();
+                } else {
+                    alert("听音写词完成！🎉");
+                    goToMode();
+                }
+            };
+
+            switchScreen("write");
+            setTimeout(() => speak(word), 500);
+        }
+
+        // ===================== 进度条 =====================
+        function updateProgress(id) {
+            const pct = ((appState.currentIndex) / appState.currentItems.length) * 100;
+            document.getElementById(id).style.width = pct + "%";
+        }
+
+        // ===================== 启动 =====================
+        window.speechSynthesis.onvoiceschanged = () => getPreferredVoice();
+        renderLevels();
+    </script>
+</body>
+</html>

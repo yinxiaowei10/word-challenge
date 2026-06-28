@@ -1671,6 +1671,29 @@
             appState.currentUtterance = null;
         }
 
+        function getPreferredVoice() {
+            if (!window.speechSynthesis) return null;
+            const voices = window.speechSynthesis.getVoices();
+            const preferred = [
+                "Google US English",
+                "Samantha",
+                "Microsoft David",
+                "Microsoft Zira",
+                "Microsoft Mark",
+                "Alex",
+                "Victoria",
+                "Karen",
+                "Daniel"
+            ];
+            for (const name of preferred) {
+                const voice = voices.find(v => v.name === name);
+                if (voice) return voice;
+            }
+            return voices.find(v => v.lang.startsWith("en") && v.name.includes("US")) ||
+                   voices.find(v => v.lang.startsWith("en")) ||
+                   null;
+        }
+
         function speak(text, lang = "en-US") {
             return new Promise((resolve) => {
                 if (!window.speechSynthesis) {
@@ -1679,9 +1702,11 @@
                 }
                 stopSpeaking();
                 const utter = new SpeechSynthesisUtterance(text);
+                const voice = getPreferredVoice();
+                if (voice) utter.voice = voice;
                 utter.lang = lang;
                 utter.rate = appState.settings.rate;
-                utter.pitch = 1.05;
+                utter.pitch = 1.0;
                 utter.volume = 1;
                 appState.currentUtterance = utter;
                 utter.onend = () => {
@@ -2060,6 +2085,13 @@
 
             document.addEventListener("keydown", handleGlobalKeydown);
 
+            if (window.speechSynthesis) {
+                window.speechSynthesis.getVoices();
+                window.speechSynthesis.onvoiceschanged = () => {
+                    window.speechSynthesis.getVoices();
+                };
+            }
+
             updateHomeCheckin();
             updateStatsDisplay();
         }
@@ -2351,7 +2383,7 @@
                 } else {
                     showResult();
                 }
-            }, isCorrect ? 1800 : 2800);
+            }, isCorrect ? 3500 : 5500);
         }
 
         function checkTextAnswer() {
@@ -2397,7 +2429,7 @@
                 } else {
                     showResult();
                 }
-            }, isCorrect ? 1800 : 3000);
+            }, isCorrect ? 4000 : 6000);
         }
 
         function handleCorrect(q) {
