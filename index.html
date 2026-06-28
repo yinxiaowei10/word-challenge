@@ -1191,18 +1191,7 @@
                 <div class="question-label" id="questionLabel"></div>
                 <div class="question-word" id="questionWord"></div>
                 <div class="question-image" id="questionImage"></div>
-                <div class="phonetic-box" id="phoneticBox">
-                    <div class="phonetic" id="phoneticText"></div>
-                    <div class="phonics" id="phonicsText"></div>
-                </div>
                 <button class="speak-btn-main" id="speakBtn" title="点击听发音">🔊</button>
-                <div class="sentence-box" id="sentenceBox">
-                    <div class="sentence-en">
-                        <button class="sentence-speak" id="sentenceSpeak" title="朗读例句">🔊</button>
-                        <span id="sentenceEn"></span>
-                    </div>
-                    <div class="sentence-cn" id="sentenceCn"></div>
-                </div>
                 <div class="hint-text" id="hintText"></div>
             </div>
 
@@ -1212,6 +1201,18 @@
             <div class="keyboard-hint" id="keyboardHint">提示：按数字键 1-4 选择答案，按 ESC 返回首页</div>
 
             <div class="feedback" id="feedback"></div>
+
+            <div class="sentence-box" id="learnCard" style="display:none; margin-top: 16px;">
+                <div class="phonetic-box" id="phoneticBox" style="margin: 0 0 12px 0;">
+                    <div class="phonetic" id="phoneticText"></div>
+                    <div class="phonics" id="phonicsText"></div>
+                </div>
+                <div class="sentence-en">
+                    <button class="sentence-speak" id="sentenceSpeak" title="朗读例句">🔊</button>
+                    <span id="sentenceEn"></span>
+                </div>
+                <div class="sentence-cn" id="sentenceCn"></div>
+            </div>
 
             <div class="btn-row" style="margin-top: 18px;">
                 <button class="btn btn-primary" id="submitBtn">✅ 提交答案</button>
@@ -1517,7 +1518,7 @@
         const phoneticText = document.getElementById("phoneticText");
         const phonicsText = document.getElementById("phonicsText");
         const speakBtn = document.getElementById("speakBtn");
-        const sentenceBox = document.getElementById("sentenceBox");
+        const learnCard = document.getElementById("learnCard");
         const sentenceSpeak = document.getElementById("sentenceSpeak");
         const sentenceEn = document.getElementById("sentenceEn");
         const sentenceCn = document.getElementById("sentenceCn");
@@ -2249,31 +2250,18 @@
             questionImage.style.display = "none";
             speakBtn.style.display = "none";
             questionSpeaker.style.display = "flex";
-            phoneticBox.style.display = "inline-flex";
-            sentenceBox.style.display = "block";
+            learnCard.style.display = "none";
             answerInput.style.display = "none";
             submitBtn.style.display = "none";
             optionsGrid.style.display = "none";
             optionsGrid.innerHTML = "";
             keyboardHint.style.display = "none";
 
-            phoneticText.textContent = q.phonetic || "";
-            phonicsText.innerHTML = q.phonics ? renderPhonics(q.phonics) : "";
-
-            const sent = sentences[q.en];
-            if (sent) {
-                sentenceEn.textContent = sent.en;
-                sentenceCn.textContent = sent.cn;
-            } else {
-                sentenceEn.textContent = "";
-                sentenceCn.textContent = "";
-            }
-
             if (appState.currentMode === "cn2en-write") {
                 questionLabel.textContent = "请根据中文释义，写出对应的英文单词：";
                 questionWord.textContent = q.cn;
                 questionWord.style.display = "block";
-                hintText.textContent = "💡 提示：英文单词，不区分大小写。点击 🔊 听发音、听例句";
+                hintText.textContent = "💡 提示：英文单词，不区分大小写。点击 🔊 听发音";
                 answerInput.placeholder = "在这里输入英文单词";
                 answerInput.style.display = "block";
                 submitBtn.style.display = "inline-block";
@@ -2282,7 +2270,7 @@
                 questionLabel.textContent = "请说出这个英文单词的中文意思：";
                 questionWord.textContent = q.en;
                 questionWord.style.display = "block";
-                hintText.textContent = "💡 提示：输入任意一个正确释义即可。点击 🔊 听发音、听例句";
+                hintText.textContent = "💡 提示：输入任意一个正确释义即可。点击 🔊 听发音";
                 answerInput.placeholder = "在这里输入中文意思";
                 answerInput.style.display = "block";
                 submitBtn.style.display = "inline-block";
@@ -2301,8 +2289,6 @@
                 showCardOptions("cn");
             } else if (appState.currentMode === "listen") {
                 questionLabel.textContent = "听发音，选择正确的中文意思：";
-                phoneticBox.style.display = "none";
-                sentenceBox.style.display = "none";
                 hintText.textContent = "💡 点击大喇叭听发音，再选择答案（按 1-4）";
                 speakBtn.style.display = "flex";
                 questionSpeaker.style.display = "none";
@@ -2314,7 +2300,7 @@
                 questionLabel.textContent = "看图片，选择正确的英文单词：";
                 questionImage.textContent = q.icon;
                 questionImage.style.display = "block";
-                hintText.textContent = "💡 这张图片代表哪个英文单词？点击 🔊 听发音、听例句";
+                hintText.textContent = "💡 这张图片代表哪个英文单词？点击 🔊 听发音";
                 showCardOptions("en");
             }
         }
@@ -2440,6 +2426,7 @@
             createStarBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
 
             recordWordPractice(q.en, true);
+            showLearnCard(q);
 
             const sent = sentences[q.en];
             speakWord(q.en).then(() => {
@@ -2460,6 +2447,7 @@
             streakDisplay.style.display = "none";
             feedback.style.display = "block";
             feedback.className = "feedback wrong";
+            learnCard.style.display = "none";
             playWrongSound();
             triggerMascot("sad");
 
@@ -2476,6 +2464,22 @@
                 appState.wrongWords.push(q);
                 saveWrongWords();
             }
+        }
+
+        function showLearnCard(q) {
+            phoneticText.textContent = q.phonetic || "";
+            phonicsText.innerHTML = q.phonics ? renderPhonics(q.phonics) : "";
+
+            const sent = sentences[q.en];
+            if (sent) {
+                sentenceEn.textContent = sent.en;
+                sentenceCn.textContent = sent.cn;
+            } else {
+                sentenceEn.textContent = "";
+                sentenceCn.textContent = "";
+            }
+
+            learnCard.style.display = "block";
         }
 
         // ===================== 显示结果 =====================
