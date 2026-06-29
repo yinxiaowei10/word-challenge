@@ -54,5 +54,5 @@
 
 ## 文件位置
 
-- 当前最新版：`/Users/yinyin/memory-work/单词大闯关.html`
-- 历史版本：`/Users/yinyin/memory-work/versions/单词大闯关-v{版本号}.html`
+- 当前最新版：`/Users/yinyin/projects/word-challenge/index.html`
+- 历史版本：`/Users/yinyin/projects/word-challenge/versions/单词大闯关-v{版本号}.html`
